@@ -34,13 +34,21 @@
     <meta property="og:video:duration" content="{{ .Duration }}">
     <meta property="og:video:type" content="video/mp4" />
     {{ end }}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text fill=%22white%22 y=%22.9em%22 font-size=%2290%22>🛠</text></svg>">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
 </head>
 
-<body style="background-color: black;">
+<body>
     {{ if .VideoURL }}
-    <video style="display: block; margin: auto; width: 100%; max-width: 960px;" autoplay controls>
-        <source src="{{ .VideoURL }}" type="video/mp4" />
-    </video>
+    <main class="container" style="max-width: 35rem">
+        <video style="width: 100%" autoplay controls>
+            <source src="{{ .VideoURL }}" type="video/mp4" />
+        </video>
+        <h2>{{ .Title }}</h2>
+        <h3>&gt; {{ .Uploader }}</h3>
+        <p>{{ .Description }}</p>
+        <a href="https://www.youtube.com/watch?v={{ .VideoID }}">Watch on YouTube.</a>
+    </main>
     {{ end }}
 </body>
 
