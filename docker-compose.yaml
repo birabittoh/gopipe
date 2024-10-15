@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    image: ghcr.io/birabittoh/gopipe:main
+    container_name: fixyoutube
+    restart: unless-stopped
+    env_file:
+      - .env
+  swag:
+    image: ghcr.io/linuxserver/swag
+    container_name: swag
+    cap_add:
+        - NET_ADMIN
+    env_file:
+      - docker/swag.env
+    volumes:
+        #- /etc/config/swag:/config
+        - ./docker/fixyoutube.subdomain.conf:/config/nginx/proxy-confs/fixyoutube.subdomain.conf:ro
+    ports:
+        - 443:443
+        - 80:80
+    restart: unless-stopped
