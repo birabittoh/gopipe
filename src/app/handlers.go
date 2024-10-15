@@ -10,8 +10,11 @@ import (
 	g "github.com/birabittoh/gopipe/src/globals"
 )
 
-const err500 = "Internal Server Error"
-const urlDuration = 6 * time.Hour
+const (
+	fmtYouTubeURL = "https://www.youtube.com/watch?v=%s"
+	err500        = "Internal Server Error"
+	urlDuration   = 6 * time.Hour
+)
 
 var (
 	templates      = template.Must(template.ParseGlob("templates/*.html"))
@@ -38,13 +41,11 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	url := "https://www.youtube.com/watch?v=" + videoID
-
 	if !userAgentRegex.MatchString(r.UserAgent()) {
-		log.Println("Regex did not match.")
+		log.Println("Regex did not match. UA: ", r.UserAgent())
 		if !g.Debug {
-			log.Println("Redirecting. UA:", r.UserAgent())
-			http.Redirect(w, r, url, http.StatusFound)
+			log.Println("Redirecting.")
+			http.Redirect(w, r, getURL(videoID), http.StatusFound)
 			return
 		}
 	}
@@ -55,26 +56,15 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	video, err := g.YT.GetVideo(url)
+	video, format, err := getVideo(videoID)
 	if err != nil {
-		log.Println("videoHandler ERROR: ", err)
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}
-
-	formats := video.Formats.WithAudioChannels()
-	if len(formats) == 0 {
-		log.Println("videoHandler ERROR: ", err)
-		http.Error(w, err500, http.StatusInternalServerError)
-		return
-	}
-
-	// TODO: check formats[i].ContentLength
-	// g.KS.Set(videoID, formats[0].URL, urlDuration)
 
 	data := map[string]interface{}{
 		"VideoID":     videoID,
-		"VideoURL":    formats[0].URL,
+		"VideoURL":    format.URL,
 		"Uploader":    video.Author,
 		"Title":       video.Title,
 		"Description": video.Description,

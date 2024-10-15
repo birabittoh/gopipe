@@ -1,4 +1,4 @@
-# FixYouTube
+# GoPipe
 Embed YouTube videos on Telegram, Discord and more!
 
 ## How to use:

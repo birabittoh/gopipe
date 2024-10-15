@@ -13,7 +13,7 @@ COPY src ./src
 COPY *.go ./
 
 # Build
-RUN CGO_ENABLED=0 go build -trimpath -o /dist/fixyoutube
+RUN CGO_ENABLED=0 go build -trimpath -o /dist/gopipe
 
 # Test
 FROM build-stage AS run-test-stage
@@ -27,4 +27,4 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /dist .
 COPY templates ./templates
 
-ENTRYPOINT ["./fixyoutube"]
+ENTRYPOINT ["./gopipe"]

@@ -2,7 +2,7 @@ services:
   app:
     build: .
     image: ghcr.io/birabittoh/gopipe:main
-    container_name: fixyoutube
+    container_name: gopipe
     restart: unless-stopped
     ports:
       - 3000:3000
