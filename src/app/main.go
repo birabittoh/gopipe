@@ -55,13 +55,12 @@ func Main() {
 	}
 
 	r.HandleFunc("GET /", indexHandler)
-	// r.HandleFunc("/proxy/{videoId}", proxyHandler)
-	// r.HandleFunc("/clear", clearHandler)
 
 	// video handlers
 	r.HandleFunc("GET /watch", videoHandler)
-	r.HandleFunc("GET /{videoID}", videoHandler)
 	r.HandleFunc("GET /shorts/{videoID}", videoHandler)
+	r.HandleFunc("GET /{videoID}", videoHandler)
+	r.HandleFunc("GET /{videoID}/{formatID}", videoHandler)
 
 	// r.HandleFunc("GET /robots.txt", robotsHandler)
 

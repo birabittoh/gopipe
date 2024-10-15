@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -56,7 +57,12 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	video, format, err := getVideo(videoID)
+	formatID, err := strconv.ParseUint(r.PathValue("formatID"), 10, 64)
+	if err != nil {
+		formatID = 0
+	}
+
+	video, format, err := getVideo(videoID, int(formatID))
 	if err != nil {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return

@@ -22,12 +22,12 @@ cp docker/swag.env.example docker/swag.env
 nano docker/swag.env
 ```
 
-Finally: `docker-compose up -d`.
+Finally: `docker compose up -d`.
 
 ### Docker without reverse proxy
 Just run:
 ```
-docker-compose -f docker-compose.simple.yaml up -d
+docker compose -f docker-compose.simple.yaml up -d
 ```
 
 ## Test and debug locally

@@ -34,13 +34,14 @@ func parseExpiration(url string) time.Duration {
 	return time.Until(time.Unix(expireTimestamp, 0))
 }
 
-func getFormat(video youtube.Video) *youtube.Format {
+func getFormat(video youtube.Video, formatID int) *youtube.Format {
 	formats := video.Formats.Select(formatsSelectFn)
-	if len(formats) == 0 {
+	l := len(formats)
+	if l == 0 {
 		return nil
 	}
 
-	return &formats[0]
+	return &formats[formatID%l]
 }
 
 func formatsSelectFn(f youtube.Format) bool {
@@ -51,7 +52,7 @@ func getURL(videoID string) string {
 	return fmt.Sprintf(fmtYouTubeURL, videoID)
 }
 
-func getFromCache(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
+func getFromCache(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
 	video, err = g.KS.Get(videoID)
 	if err != nil {
 		return
@@ -67,11 +68,11 @@ func getFromCache(videoID string) (video *youtube.Video, format *youtube.Format,
 		return
 	}
 
-	format = getFormat(*video)
+	format = getFormat(*video, formatID)
 	return
 }
 
-func getFromYT(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
+func getFromYT(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
 	url := getURL(videoID)
 
 	log.Println("Requesting video ", url)
@@ -80,7 +81,7 @@ func getFromYT(videoID string) (video *youtube.Video, format *youtube.Format, er
 		return
 	}
 
-	format = getFormat(*video)
+	format = getFormat(*video, formatID)
 	duration := defaultCacheDuration
 	v := emptyVideo
 	if format != nil {
@@ -92,10 +93,10 @@ func getFromYT(videoID string) (video *youtube.Video, format *youtube.Format, er
 	return
 }
 
-func getVideo(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
-	video, format, err = getFromCache(videoID)
+func getVideo(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
+	video, format, err = getFromCache(videoID, formatID)
 	if err != nil {
-		video, format, err = getFromYT(videoID)
+		video, format, err = getFromYT(videoID, formatID)
 	}
 	return
 }
