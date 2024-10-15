@@ -71,12 +71,18 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var thumbnail string
+	if len(video.Thumbnails) > 0 {
+		thumbnail = video.Thumbnails[len(video.Thumbnails)-1].URL
+	}
+
 	data := map[string]interface{}{
 		"VideoID":     videoID,
 		"VideoURL":    format.URL,
 		"Uploader":    video.Author,
 		"Title":       video.Title,
 		"Description": video.Description,
+		"Thumbnail":   thumbnail,
 		"Duration":    video.Duration,
 		"Debug":       g.Debug,
 	}
