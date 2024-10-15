@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	g "github.com/birabittoh/gopipe/src/globals"
@@ -45,7 +46,7 @@ func getFormat(video youtube.Video, formatID int) *youtube.Format {
 }
 
 func formatsSelectFn(f youtube.Format) bool {
-	return f.AudioChannels > 1 && f.ContentLength < maxContentLength
+	return f.AudioChannels > 1 && f.ContentLength < maxContentLength && strings.HasPrefix(f.MimeType, "video/mp4")
 }
 
 func getURL(videoID string) string {

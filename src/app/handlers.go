@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"text/template"
-	"time"
 
 	g "github.com/birabittoh/gopipe/src/globals"
 )
@@ -14,7 +13,6 @@ import (
 const (
 	fmtYouTubeURL = "https://www.youtube.com/watch?v=%s"
 	err500        = "Internal Server Error"
-	urlDuration   = 6 * time.Hour
 )
 
 var (
