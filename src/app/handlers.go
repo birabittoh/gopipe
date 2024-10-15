@@ -62,6 +62,11 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if video == nil || format == nil {
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
+
 	data := map[string]interface{}{
 		"VideoID":     videoID,
 		"VideoURL":    format.URL,

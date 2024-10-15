@@ -23,15 +23,24 @@ var (
 	expireRegex = regexp.MustCompile(`(?i)expire=(\d+)`)
 )
 
-func parseExpiration(url string) (time.Duration, error) {
+func parseExpiration(url string) time.Duration {
 	expireString := expireRegex.FindStringSubmatch(url)
 	expireTimestamp, err := strconv.ParseInt(expireString[1], 10, 64)
 	if err != nil {
 		log.Println("parseExpiration ERROR: ", err)
-		return time.Duration(0), err
+		return defaultCacheDuration
 	}
 
-	return time.Until(time.Unix(expireTimestamp, 0)), nil
+	return time.Until(time.Unix(expireTimestamp, 0))
+}
+
+func getFormat(video youtube.Video) *youtube.Format {
+	formats := video.Formats.Select(formatsSelectFn)
+	if len(formats) == 0 {
+		return nil
+	}
+
+	return &formats[0]
 }
 
 func formatsSelectFn(f youtube.Format) bool {
@@ -42,7 +51,7 @@ func getURL(videoID string) string {
 	return fmt.Sprintf(fmtYouTubeURL, videoID)
 }
 
-func getFromCache(videoID string) (video *youtube.Video, format youtube.Format, err error) {
+func getFromCache(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
 	video, err = g.KS.Get(videoID)
 	if err != nil {
 		return
@@ -58,39 +67,32 @@ func getFromCache(videoID string) (video *youtube.Video, format youtube.Format, 
 		return
 	}
 
-	formats := video.Formats.Select(formatsSelectFn)
-	if len(formats) == 0 {
-		err = errors.New("no formats for this video")
-		return
-	}
-
-	format = formats[0]
+	format = getFormat(*video)
 	return
 }
 
-func getFromYT(videoID string) (video *youtube.Video, format youtube.Format, err error) {
-	video, err = g.YT.GetVideo(getURL(videoID))
+func getFromYT(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
+	url := getURL(videoID)
+
+	log.Println("Requesting video ", url)
+	video, err = g.YT.GetVideo(url)
 	if err != nil {
 		return
 	}
 
-	formats := video.Formats.Select(formatsSelectFn)
-	if len(formats) == 0 {
-		g.KS.Set(videoID, emptyVideo, defaultCacheDuration)
-		return
+	format = getFormat(*video)
+	duration := defaultCacheDuration
+	v := emptyVideo
+	if format != nil {
+		v = *video
+		duration = parseExpiration(format.URL)
 	}
 
-	format = formats[0]
-	expiration, err := parseExpiration(format.URL)
-	if err != nil {
-		expiration = defaultCacheDuration
-	}
-
-	g.KS.Set(videoID, *video, expiration)
+	g.KS.Set(videoID, v, duration)
 	return
 }
 
-func getVideo(videoID string) (video *youtube.Video, format youtube.Format, err error) {
+func getVideo(videoID string) (video *youtube.Video, format *youtube.Format, err error) {
 	video, format, err = getFromCache(videoID)
 	if err != nil {
 		video, format, err = getFromYT(videoID)
