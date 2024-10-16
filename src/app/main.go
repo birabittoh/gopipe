@@ -56,6 +56,7 @@ func Main() {
 
 	r.HandleFunc("GET /proxy/{videoID}", proxyHandler)
 	r.HandleFunc("GET /proxy/{videoID}/{formatID}", proxyHandler)
+	r.HandleFunc("GET /sub/{videoID}/{language}", subHandler)
 
 	// r.HandleFunc("GET /robots.txt", robotsHandler)
 

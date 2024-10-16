@@ -6,6 +6,12 @@ import (
 	"strings"
 )
 
+type Captions struct {
+	VideoID  string
+	Language string
+	URL      string
+}
+
 func getEnvDefault(key string, def string) string {
 	res := os.Getenv(key)
 	if res == "" {

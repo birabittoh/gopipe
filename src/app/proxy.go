@@ -7,9 +7,11 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	g "github.com/birabittoh/gopipe/src/globals"
+	"github.com/birabittoh/gopipe/src/subs"
 )
 
 func proxyHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +72,44 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Stream the content to the client while it's being downloaded and piped
 	_, err = io.Copy(io.MultiWriter(w, pw), res.Body)
+	if err != nil {
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
+}
+
+func subHandler(w http.ResponseWriter, r *http.Request) {
+	videoID := r.PathValue("videoID")
+
+	video, err := g.KS.Get(videoID)
+	if err != nil || video == nil {
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	captions := getCaptions(*video)
+	caption, ok := captions[strings.TrimSuffix(r.PathValue("language"), ".vtt")]
+	if !ok {
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	res, err := g.C.Get(caption.URL)
+	if err != nil {
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
+	defer res.Body.Close()
+
+	w.Header().Set("Content-Type", "text/vtt")
+
+	content, err := io.ReadAll(res.Body)
+	if err != nil {
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
+
+	err = subs.Parse(content, w)
 	if err != nil {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return

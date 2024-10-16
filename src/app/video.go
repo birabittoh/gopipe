@@ -51,6 +51,19 @@ func getFormat(video youtube.Video, formatID int) *youtube.Format {
 	return nil
 }
 
+func getCaptions(video youtube.Video) map[string]Captions {
+	c := make(map[string]Captions)
+	for _, caption := range video.CaptionTracks {
+		c[caption.LanguageCode] = Captions{
+			VideoID:  video.ID,
+			Language: caption.LanguageCode,
+			URL:      caption.BaseURL,
+		}
+	}
+
+	return c
+}
+
 func formatsSelectFn(f youtube.Format) bool {
 	return f.AudioChannels > 1 && f.ContentLength < maxContentLength && strings.HasPrefix(f.MimeType, "video/mp4")
 }
