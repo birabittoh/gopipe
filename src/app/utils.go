@@ -21,7 +21,7 @@ func parseBool(s string) bool {
 func getFormatID(s string) int {
 	formatID, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
-		formatID = 0
+		formatID = 1
 	}
 	return int(formatID)
 }

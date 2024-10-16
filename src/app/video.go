@@ -35,18 +35,20 @@ func parseExpiration(url string) time.Duration {
 }
 
 func getFormat(video youtube.Video, formatID int) *youtube.Format {
-	selectFn := formatsSelectFn
-	if formatID == 0 {
-		selectFn = formatsSelectFnBest
-		formatID = 1
+	if formatID != 0 {
+		f := video.Formats.Select(formatsSelectFn)
+		l := len(f)
+		if l > 0 {
+			return &f[(formatID-1)%l]
+		}
 	}
 
-	f := video.Formats.Select(selectFn)
-	l := len(f)
-	if l == 0 {
-		return nil
+	f := video.Formats.Select(formatsSelectFnBest)
+	if len(f) > 0 {
+		return &f[0]
 	}
-	return &f[(formatID-1)%l]
+
+	return nil
 }
 
 func formatsSelectFn(f youtube.Format) bool {

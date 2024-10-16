@@ -12,10 +12,10 @@ services:
     cap_add:
         - NET_ADMIN
     env_file:
-      - docker/swag.env
+      - swag/swag.env
     volumes:
         #- /etc/config/swag:/config
-        - ./docker/gopipe.subdomain.conf:/config/nginx/proxy-confs/gopipe.subdomain.conf:ro
+        - ./swag/gopipe.subdomain.conf:/config/nginx/proxy-confs/gopipe.subdomain.conf:ro
     ports:
         - 443:443
         - 80:80
