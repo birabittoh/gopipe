@@ -1,17 +1,19 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
-	"strconv"
 	"text/template"
 
 	g "github.com/birabittoh/gopipe/src/globals"
+	"golang.org/x/time/rate"
 )
 
 const (
 	fmtYouTubeURL = "https://www.youtube.com/watch?v=%s"
+	err404        = "Not Found"
 	err500        = "Internal Server Error"
 )
 
@@ -20,6 +22,17 @@ var (
 	userAgentRegex = regexp.MustCompile(`(?i)bot|facebook|embed|got|firefox\/92|firefox\/38|curl|wget|go-http|yahoo|generator|whatsapp|preview|link|proxy|vkshare|images|analyzer|index|crawl|spider|python|cfnetwork|node`)
 	videoRegex     = regexp.MustCompile(`(?i)^[a-z0-9_-]{11}$`)
 )
+
+func limit(limiter *rate.Limiter, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !limiter.Allow() {
+			status := http.StatusTooManyRequests
+			http.Error(w, http.StatusText(status), status)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "index.html", nil)
@@ -55,12 +68,9 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formatID, err := strconv.ParseUint(r.PathValue("formatID"), 10, 64)
-	if err != nil {
-		formatID = 0
-	}
+	formatID := getFormatID(r.PathValue("formatID"))
 
-	video, format, err := getVideo(videoID, int(formatID))
+	video, format, err := getVideo(videoID, formatID)
 	if err != nil {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
@@ -76,9 +86,14 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		thumbnail = video.Thumbnails[len(video.Thumbnails)-1].URL
 	}
 
+	videoURL := format.URL
+	if g.Proxy {
+		videoURL = fmt.Sprintf("/proxy/%s/%d", videoID, formatID)
+	}
+
 	data := map[string]interface{}{
 		"VideoID":     videoID,
-		"VideoURL":    format.URL,
+		"VideoURL":    videoURL,
 		"Uploader":    video.Author,
 		"Title":       video.Title,
 		"Description": video.Description,
