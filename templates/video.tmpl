@@ -1,7 +1,7 @@
 {{ extends "base.tmpl" }}
 
 {{define "meta" -}}
-    <title>{{ .Title }} - GoTube</title>
+    <title>{{ .Title }} - GoPipe</title>
     <link rel="canonical" href="https://www.youtube.com/watch?v={{ .VideoID }}" />
     {{ if not .Debug }}
     <meta http-equiv="refresh" content="0;url=https://www.youtube.com/watch?v={{ .VideoID }}" />
@@ -14,7 +14,7 @@
     <meta property="twitter:title" content="{{ .Title }}" />
     <meta property="og:title" content="{{ .Title }}" />
     <meta property="og:description" content="{{ .Description }}" />
-    <meta property="og:site_name" content="GoTube ({{ .Author }})" />
+    <meta property="og:site_name" content="GoPipe ({{ .Author }})" />
     <meta property="twitter:image" content="{{ .Thumbnail }}" />
     <meta property="twitter:player:stream:content_type" content="video/mp4" />
     {{ if .VideoURL }}
