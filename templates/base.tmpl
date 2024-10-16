@@ -1,0 +1,30 @@
+<!doctype html>
+{{ .Heading }}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{block "meta" .}}{{end}}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text fill=%22white%22 y=%22.9em%22 font-size=%2290%22>🛠</text></svg>">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+</head>
+
+<body>
+    <main class="container" style="max-width: 35rem">
+        {{block "content" .}}
+        <h1>Base template</h1>
+        {{end}}
+        <hr>
+        <section>
+            <small>
+                <a href="https://github.com/birabittoh/gopipe" target="_blank">Source code</a>
+            </small>
+            <br />
+            <small>• YouTube is a trademark of Google LLC. This app is not affiliated with Google LLC.</small>
+        </section>
+    </main>
+    {{block "scripts" .}}{{end}}
+</body>
+
+</html>

@@ -6,6 +6,7 @@ require (
 	github.com/birabittoh/myks v0.0.2
 	github.com/joho/godotenv v1.5.1
 	github.com/kkdai/youtube/v2 v2.10.1
+	github.com/utking/extemplate v0.0.0-20240811163052-49c208254ff2
 	golang.org/x/time v0.7.0
 )
 

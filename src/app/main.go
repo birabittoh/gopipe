@@ -16,6 +16,7 @@ import (
 func Main() {
 	godotenv.Load()
 
+	// read env vars
 	g.Debug = parseBool(os.Getenv("APP_DEBUG"))
 	if g.Debug {
 		log.Println("Debug mode enabled.")
@@ -29,6 +30,13 @@ func Main() {
 
 	g.Port = getEnvDefault("APP_PORT", "3000")
 
+	// set up extemplate
+	err := g.XT.ParseDir("templates", []string{".tmpl"})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// set up http server
 	r := http.NewServeMux()
 
 	var serveMux http.Handler
@@ -41,7 +49,6 @@ func Main() {
 
 	r.HandleFunc("GET /", indexHandler)
 
-	// video handlers
 	r.HandleFunc("GET /watch", videoHandler)
 	r.HandleFunc("GET /shorts/{videoID}", videoHandler)
 	r.HandleFunc("GET /{videoID}", videoHandler)
