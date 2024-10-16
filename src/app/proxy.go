@@ -27,11 +27,6 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if video.ID == emptyVideo.ID {
-		http.Error(w, err500, http.StatusInternalServerError)
-		return
-	}
-
 	format := getFormat(*video, formatID)
 	if format == nil {
 		http.Error(w, err500, http.StatusInternalServerError)

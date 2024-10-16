@@ -20,7 +20,6 @@ const (
 )
 
 var (
-	emptyVideo  = youtube.Video{}
 	expireRegex = regexp.MustCompile(`(?i)expire=(\d+)`)
 )
 
@@ -36,17 +35,26 @@ func parseExpiration(url string) time.Duration {
 }
 
 func getFormat(video youtube.Video, formatID int) *youtube.Format {
-	formats := video.Formats.Select(formatsSelectFn)
-	l := len(formats)
+	selectFn := formatsSelectFn
+	if formatID == 0 {
+		selectFn = formatsSelectFnBest
+		formatID = 1
+	}
+
+	f := video.Formats.Select(selectFn)
+	l := len(f)
 	if l == 0 {
 		return nil
 	}
-
-	return &formats[formatID%l]
+	return &f[(formatID-1)%l]
 }
 
 func formatsSelectFn(f youtube.Format) bool {
 	return f.AudioChannels > 1 && f.ContentLength < maxContentLength && strings.HasPrefix(f.MimeType, "video/mp4")
+}
+
+func formatsSelectFnBest(f youtube.Format) bool {
+	return f.AudioChannels > 1 && strings.HasPrefix(f.MimeType, "video/mp4")
 }
 
 func getURL(videoID string) string {
@@ -64,11 +72,6 @@ func getFromCache(videoID string, formatID int) (video *youtube.Video, format *y
 		return
 	}
 
-	if video.ID == emptyVideo.ID {
-		err = errors.New("no formats for this video")
-		return
-	}
-
 	format = getFormat(*video, formatID)
 	return
 }
@@ -78,19 +81,17 @@ func getFromYT(videoID string, formatID int) (video *youtube.Video, format *yout
 
 	log.Println("Requesting video ", url)
 	video, err = g.YT.GetVideo(url)
-	if err != nil {
+	if err != nil || video == nil {
 		return
 	}
 
 	format = getFormat(*video, formatID)
 	duration := defaultCacheDuration
-	v := emptyVideo
 	if format != nil {
-		v = *video
 		duration = parseExpiration(format.URL)
 	}
 
-	g.KS.Set(videoID, v, duration)
+	g.KS.Set(videoID, *video, duration)
 	return
 }
 
