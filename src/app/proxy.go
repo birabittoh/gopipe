@@ -103,13 +103,7 @@ func subHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/vtt")
 
-	content, err := io.ReadAll(res.Body)
-	if err != nil {
-		http.Error(w, err500, http.StatusInternalServerError)
-		return
-	}
-
-	err = subs.Parse(content, w)
+	err = subs.Convert(res.Body, w)
 	if err != nil {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
