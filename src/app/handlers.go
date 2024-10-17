@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	g "github.com/birabittoh/gopipe/src/globals"
+	"github.com/kkdai/youtube/v2"
 	"golang.org/x/time/rate"
 )
 
@@ -15,6 +16,7 @@ const (
 	fmtYouTubeURL = "https://www.youtube.com/watch?v=%s"
 	err404        = "Not Found"
 	err500        = "Internal Server Error"
+	err401        = "Unauthorized"
 	heading       = `<!--
  .d8888b.       88888888888       888              
 d88P  Y88b          888           888              
@@ -30,8 +32,7 @@ A better way to embed YouTube videos on Telegram.
 )
 
 var (
-	userAgentRegex = regexp.MustCompile(`(?i)bot|facebook|embed|got|firefox\/92|firefox\/38|curl|wget|go-http|yahoo|generator|whatsapp|preview|link|proxy|vkshare|images|analyzer|index|crawl|spider|python|cfnetwork|node`)
-	videoRegex     = regexp.MustCompile(`(?i)^[a-z0-9_-]{11}$`)
+	videoRegex = regexp.MustCompile(`(?i)^[a-z0-9_-]{11}$`)
 )
 
 func limit(limiter *rate.Limiter, next http.Handler) http.Handler {
@@ -64,18 +65,9 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if !userAgentRegex.MatchString(r.UserAgent()) {
-		log.Println("Regex did not match. UA: ", r.UserAgent())
-		if !g.Debug {
-			log.Println("Redirecting.")
-			http.Redirect(w, r, getURL(videoID), http.StatusFound)
-			return
-		}
-	}
-
 	if !videoRegex.MatchString(videoID) {
 		log.Println("Invalid video ID: ", videoID)
-		http.Error(w, "Invalid video ID.", http.StatusBadRequest)
+		http.Error(w, err404, http.StatusNotFound)
 		return
 	}
 
@@ -111,13 +103,38 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		"Thumbnail":   thumbnail,
 		"Duration":    video.Duration,
 		"Captions":    getCaptions(*video),
-		"Debug":       g.Debug,
 		"Heading":     template.HTML(heading),
 	}
 
 	err = g.XT.ExecuteTemplate(w, "video.tmpl", data)
 	if err != nil {
 		log.Println("indexHandler ERROR: ", err)
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
+}
+
+func cacheHandler(w http.ResponseWriter, r *http.Request) {
+	username, password, ok := r.BasicAuth()
+	if !ok || username != g.AdminUser || password != g.AdminPass {
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		http.Error(w, err401, http.StatusUnauthorized)
+		return
+	}
+
+	var videos []youtube.Video
+	for s := range g.KS.Keys() {
+		video, err := g.KS.Get(s)
+		if err != nil || video == nil {
+			continue
+		}
+		videos = append(videos, *video)
+	}
+
+	data := map[string]interface{}{"Videos": videos}
+	err := g.XT.ExecuteTemplate(w, "cache.tmpl", data)
+	if err != nil {
+		log.Println("cacheHandler ERROR: ", err)
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}

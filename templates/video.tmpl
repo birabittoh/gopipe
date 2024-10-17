@@ -3,9 +3,6 @@
 {{define "meta" -}}
     <title>{{ .Title }} - GoPipe</title>
     <link rel="canonical" href="https://www.youtube.com/watch?v={{ .VideoID }}" />
-    {{ if not .Debug }}
-    <meta http-equiv="refresh" content="0;url=https://www.youtube.com/watch?v={{ .VideoID }}" />
-    {{ end }}
     <meta property="og:url" content="https://www.youtube.com/watch?v={{ .VideoID }}" />
     <meta property="theme-color" content="0000FF" />
     <meta property="twitter:card" content="player" />

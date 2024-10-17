@@ -1,0 +1,22 @@
+{{ extends "base.tmpl" }}
+
+{{define "heading"}}{{end}}
+
+{{define "meta" -}}
+    <title>Cache - GoPipe</title>
+{{end}}
+
+
+{{define "content" -}}
+    <h1>Cached videos</h1>
+    <a href="/">← Home</a>
+    <ul style="margin-top: 30px">
+        {{ range .Videos }}
+        <li>
+            <a href="/{{ .ID }}">{{ .Title }}</a>
+            <br />
+            <small>{{ .Author }}</small>
+        </li>
+        {{ end }}
+    </ul>
+{{end}}

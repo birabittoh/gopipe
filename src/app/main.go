@@ -30,6 +30,13 @@ func Main() {
 
 	g.Port = getEnvDefault("APP_PORT", "3000")
 
+	g.AdminUser = getEnvDefault("APP_ADMIN_USER", "admin")
+	g.AdminPass = getEnvDefault("APP_ADMIN_PASS", "admin")
+
+	if g.AdminUser == "admin" && g.AdminPass == "admin" {
+		log.Println("Admin credentials not set. Please set APP_ADMIN_USER and APP_ADMIN_PASS.")
+	}
+
 	// set up extemplate
 	err := g.XT.ParseDir("templates", []string{".tmpl"})
 	if err != nil {
@@ -58,7 +65,7 @@ func Main() {
 	r.HandleFunc("GET /proxy/{videoID}/{formatID}", proxyHandler)
 	r.HandleFunc("GET /sub/{videoID}/{language}", subHandler)
 
-	// r.HandleFunc("GET /robots.txt", robotsHandler)
+	r.HandleFunc("GET /cache", cacheHandler)
 
 	log.Println("Serving on port " + g.Port)
 	log.Fatal(http.ListenAndServe(":"+g.Port, serveMux))

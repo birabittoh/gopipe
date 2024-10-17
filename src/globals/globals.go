@@ -21,4 +21,7 @@ var (
 
 	KS  = myks.New[youtube.Video](3 * time.Hour)
 	PKS *myks.KeyStore[bytes.Buffer]
+
+	AdminUser string
+	AdminPass string
 )
