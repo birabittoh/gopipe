@@ -65,6 +65,8 @@ func Main() {
 	r.HandleFunc("GET /proxy/{videoID}/{formatID}", proxyHandler)
 	r.HandleFunc("GET /sub/{videoID}/{language}", subHandler)
 
+	r.HandleFunc("POST /download", downloadHandler)
+
 	r.HandleFunc("GET /cache", cacheHandler)
 
 	log.Println("Serving on port " + g.Port)

@@ -95,15 +95,17 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"VideoID":     videoID,
-		"VideoURL":    videoURL,
-		"Author":      video.Author,
-		"Title":       video.Title,
-		"Description": video.Description,
-		"Thumbnail":   thumbnail,
-		"Duration":    video.Duration,
-		"Captions":    getCaptions(*video),
-		"Heading":     template.HTML(heading),
+		"VideoID":      videoID,
+		"VideoURL":     videoURL,
+		"Author":       video.Author,
+		"Title":        video.Title,
+		"Description":  video.Description,
+		"Thumbnail":    thumbnail,
+		"Duration":     video.Duration,
+		"Captions":     getCaptions(*video),
+		"Heading":      template.HTML(heading),
+		"VideoFormats": video.Formats.Select(formatsSelectFnVideo),
+		"AudioFormats": video.Formats.Select(formatsSelectFnAudio),
 	}
 
 	err = g.XT.ExecuteTemplate(w, "video.tmpl", data)
@@ -112,6 +114,40 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}
+}
+
+func downloadHandler(w http.ResponseWriter, r *http.Request) {
+	videoID := r.FormValue("video")
+	if videoID == "" {
+		http.Error(w, "Missing video ID", http.StatusBadRequest)
+		return
+	}
+
+	if !videoRegex.MatchString(videoID) {
+		log.Println("Invalid video ID:", videoID)
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	itagno := r.FormValue("itagno")
+	if itagno == "" {
+		http.Error(w, "Missing ItagNo", http.StatusBadRequest)
+		return
+	}
+
+	video, err := g.KS.Get(videoID)
+	if err != nil || video == nil {
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	formats := video.Formats.Quality(itagno)
+	if len(formats) == 0 {
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, formats[0].URL, http.StatusFound)
 }
 
 func cacheHandler(w http.ResponseWriter, r *http.Request) {

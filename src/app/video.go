@@ -72,6 +72,14 @@ func formatsSelectFnBest(f youtube.Format) bool {
 	return f.AudioChannels > 1 && strings.HasPrefix(f.MimeType, "video/mp4")
 }
 
+func formatsSelectFnAudio(f youtube.Format) bool {
+	return f.QualityLabel == ""
+}
+
+func formatsSelectFnVideo(f youtube.Format) bool {
+	return !formatsSelectFnAudio(f)
+}
+
 func getURL(videoID string) string {
 	return fmt.Sprintf(fmtYouTubeURL, videoID)
 }
