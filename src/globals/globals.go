@@ -50,14 +50,8 @@ func parseFormat(f youtube.Format) (res string) {
 
 	codecs := " (" + strings.Split(mime[1], "\"")[1] + ")"
 
-	if isAudio {
-		return res + " - audio only" + codecs
-	}
-
-	res += fmt.Sprintf(" (%d FPS)", f.FPS)
-
-	if f.AudioChannels == 0 {
-		res += " - video only"
+	if !isAudio {
+		res += fmt.Sprintf(" (%d FPS)", f.FPS)
 	}
 
 	res += codecs

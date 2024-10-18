@@ -65,19 +65,23 @@ func getCaptions(video youtube.Video) map[string]Captions {
 }
 
 func formatsSelectFn(f youtube.Format) bool {
-	return f.AudioChannels > 1 && f.ContentLength < maxContentLength && strings.HasPrefix(f.MimeType, "video/mp4")
+	return f.AudioChannels > 0 && f.ContentLength < maxContentLength && strings.HasPrefix(f.MimeType, "video/mp4")
 }
 
 func formatsSelectFnBest(f youtube.Format) bool {
-	return f.AudioChannels > 1 && strings.HasPrefix(f.MimeType, "video/mp4")
+	return f.AudioChannels > 0 && strings.HasPrefix(f.MimeType, "video/mp4")
+}
+
+func formatsSelectFnAudioVideo(f youtube.Format) bool {
+	return f.AudioChannels > 0 && f.QualityLabel != ""
+}
+
+func formatsSelectFnVideo(f youtube.Format) bool {
+	return f.QualityLabel != "" && f.AudioChannels == 0
 }
 
 func formatsSelectFnAudio(f youtube.Format) bool {
 	return f.QualityLabel == ""
-}
-
-func formatsSelectFnVideo(f youtube.Format) bool {
-	return !formatsSelectFnAudio(f)
 }
 
 func getURL(videoID string) string {

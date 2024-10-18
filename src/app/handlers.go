@@ -95,17 +95,18 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]interface{}{
-		"VideoID":      videoID,
-		"VideoURL":     videoURL,
-		"Author":       video.Author,
-		"Title":        video.Title,
-		"Description":  video.Description,
-		"Thumbnail":    thumbnail,
-		"Duration":     video.Duration,
-		"Captions":     getCaptions(*video),
-		"Heading":      template.HTML(heading),
-		"VideoFormats": video.Formats.Select(formatsSelectFnVideo),
-		"AudioFormats": video.Formats.Select(formatsSelectFnAudio),
+		"VideoID":           videoID,
+		"VideoURL":          videoURL,
+		"Author":            video.Author,
+		"Title":             video.Title,
+		"Description":       video.Description,
+		"Thumbnail":         thumbnail,
+		"Duration":          video.Duration,
+		"Captions":          getCaptions(*video),
+		"Heading":           template.HTML(heading),
+		"AudioVideoFormats": video.Formats.Select(formatsSelectFnAudioVideo),
+		"VideoFormats":      video.Formats.Select(formatsSelectFnVideo),
+		"AudioFormats":      video.Formats.Select(formatsSelectFnAudio),
 	}
 
 	err = g.XT.ExecuteTemplate(w, "video.tmpl", data)

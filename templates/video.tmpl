@@ -36,16 +36,27 @@
     <form action="/download" method="post" rel="noopener" target="_blank" style="display: grid; grid-template-columns: auto auto; justify-content: space-between;">
         <input type="hidden" name="video" value="{{ .VideoID }}">
         <select name="itagno">
+            <optgroup label="Audio & Video">
+            {{ range .AudioVideoFormats }}
+                <option value="{{ .ItagNo }}">
+                    {{ parseFormat . }}
+                </option>
+                {{ end }}
+            </optgroup>
+            <optgroup label="Video only">
             {{ range .VideoFormats }}
-            <option value="{{ .ItagNo }}">
-                {{ parseFormat . }}
-            </option>
-            {{ end }}
-            {{ range .AudioFormats }}
-            <option value="{{ .ItagNo }}">
-                {{ parseFormat . }}
-            </option>
-            {{ end }}
+                <option value="{{ .ItagNo }}">
+                    {{ parseFormat . }}
+                </option>
+                {{ end }}
+            </optgroup>
+            <optgroup label="Audio only">
+                {{ range .AudioFormats }}
+                <option value="{{ .ItagNo }}">
+                    {{ parseFormat . }}
+                </option>
+                {{ end }}
+            </optgroup>
         </select>
         <button type="submit">Download</button>
     </form>
