@@ -55,7 +55,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func videoHandler(w http.ResponseWriter, r *http.Request) {
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	videoID := r.URL.Query().Get("v")
 	if videoID == "" {
 		videoID = r.PathValue("videoID")
@@ -63,6 +63,22 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Missing video ID", http.StatusBadRequest)
 			return
 		}
+	}
+
+	if !videoRegex.MatchString(videoID) {
+		log.Println("Invalid video ID:", videoID)
+		http.Error(w, err404, http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, "/"+videoID, http.StatusFound)
+}
+
+func videoHandler(w http.ResponseWriter, r *http.Request) {
+	videoID := r.PathValue("videoID")
+	if videoID == "" {
+		http.Error(w, "Missing video ID", http.StatusBadRequest)
+		return
 	}
 
 	if !videoRegex.MatchString(videoID) {

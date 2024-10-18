@@ -56,8 +56,8 @@ func Main() {
 
 	r.HandleFunc("GET /", indexHandler)
 
-	r.HandleFunc("GET /watch", videoHandler)
-	r.HandleFunc("GET /shorts/{videoID}", videoHandler)
+	r.HandleFunc("GET /watch", redirectHandler)
+	r.HandleFunc("GET /shorts/{videoID}", redirectHandler)
 	r.HandleFunc("GET /{videoID}", videoHandler)
 	r.HandleFunc("GET /{videoID}/{formatID}", videoHandler)
 
