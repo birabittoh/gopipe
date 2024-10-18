@@ -88,7 +88,8 @@ func subHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	captions := getCaptions(*video)
-	caption, ok := captions[strings.TrimSuffix(r.PathValue("language"), ".vtt")]
+	language := strings.TrimSuffix(r.PathValue("language"), ".vtt")
+	caption, ok := captions[language]
 	if !ok {
 		http.Error(w, err404, http.StatusNotFound)
 		return
@@ -101,9 +102,16 @@ func subHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer res.Body.Close()
 
-	w.Header().Set("Content-Type", "text/vtt")
+	buffer, err := subs.Convert(res.Body)
+	if err != nil {
+		http.Error(w, err500, http.StatusInternalServerError)
+		return
+	}
 
-	err = subs.Convert(res.Body, w)
+	w.Header().Set("Content-Type", "text/vtt")
+	w.Header().Set("Content-Length", strconv.Itoa(buffer.Len()))
+
+	_, err = buffer.WriteTo(w)
 	if err != nil {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return

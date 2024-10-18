@@ -27,7 +27,7 @@ func parseExpiration(url string) time.Duration {
 	expireString := expireRegex.FindStringSubmatch(url)
 	expireTimestamp, err := strconv.ParseInt(expireString[1], 10, 64)
 	if err != nil {
-		log.Println("parseExpiration ERROR: ", err)
+		log.Println("parseExpiration ERROR:", err)
 		return defaultCacheDuration
 	}
 
@@ -94,7 +94,7 @@ func getFromCache(videoID string, formatID int) (video *youtube.Video, format *y
 func getFromYT(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
 	url := getURL(videoID)
 
-	log.Println("Requesting video ", url)
+	log.Println("Requesting video", url)
 	video, err = g.YT.GetVideo(url)
 	if err != nil || video == nil {
 		return

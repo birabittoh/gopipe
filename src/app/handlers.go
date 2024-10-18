@@ -49,7 +49,7 @@ func limit(limiter *rate.Limiter, next http.Handler) http.Handler {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	err := g.XT.ExecuteTemplate(w, "index.tmpl", nil)
 	if err != nil {
-		log.Println("indexHandler ERROR: ", err)
+		log.Println("indexHandler ERROR:", err)
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}
@@ -66,7 +66,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !videoRegex.MatchString(videoID) {
-		log.Println("Invalid video ID: ", videoID)
+		log.Println("Invalid video ID:", videoID)
 		http.Error(w, err404, http.StatusNotFound)
 		return
 	}
@@ -108,7 +108,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = g.XT.ExecuteTemplate(w, "video.tmpl", data)
 	if err != nil {
-		log.Println("indexHandler ERROR: ", err)
+		log.Println("indexHandler ERROR:", err)
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}
@@ -134,7 +134,7 @@ func cacheHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{"Videos": videos}
 	err := g.XT.ExecuteTemplate(w, "cache.tmpl", data)
 	if err != nil {
-		log.Println("cacheHandler ERROR: ", err)
+		log.Println("cacheHandler ERROR:", err)
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}

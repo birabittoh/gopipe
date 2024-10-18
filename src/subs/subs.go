@@ -1,6 +1,7 @@
 package subs
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -29,8 +30,8 @@ type Sentence struct {
 	Time int    `xml:"t,attr"`    // Optional start time (not always present)
 }
 
-func writeVTT(output io.Writer, i, startTime, endTime int, sentence string) {
-	output.Write(
+func writeVTT(output *bytes.Buffer, i, startTime, endTime int, sentence string) (int, error) {
+	return output.Write(
 		[]byte(
 			fmt.Sprintf(
 				"%d\n%s --> %s\n%s\n\n",
@@ -49,28 +50,35 @@ func millisecondsToTimestamp(ms int) string {
 	return fmt.Sprintf("%02d:%02d:%02d.%03d", seconds/3600, (seconds%3600)/60, seconds%60, milliseconds)
 }
 
-func Convert(reader io.Reader, output io.Writer) error {
+func Convert(reader io.Reader) (buffer bytes.Buffer, err error) {
 	content, err := io.ReadAll(reader)
 	if err != nil {
-		return err
+		return
 	}
 
 	var timedText TimedText
 	err = xml.Unmarshal(content, &timedText)
 	if err != nil {
 		log.Println("Error unmarshalling XML:", err)
-		return err
+		return
 	}
 
-	output.Write([]byte("WEBVTT\n\n"))
+	n, err := buffer.Write([]byte("WEBVTT\n\n"))
+	if err != nil {
+		return
+	}
 
-	var lastEndTime int
+	l := len(timedText.Body.Paragraphs) - 1
+	var m int
 	for i, p := range timedText.Body.Paragraphs {
 		startTimeMS := p.Start
 		endTimeMS := p.Start + p.Length
 
-		if startTimeMS < lastEndTime {
-			startTimeMS = lastEndTime
+		if i < l {
+			nextStartTimeMS := timedText.Body.Paragraphs[i+1].Start
+			if nextStartTimeMS < endTimeMS {
+				endTimeMS = nextStartTimeMS
+			}
 		}
 
 		var sentence string
@@ -87,9 +95,12 @@ func Convert(reader io.Reader, output io.Writer) error {
 			continue
 		}
 
-		lastEndTime = endTimeMS
-		writeVTT(output, i+1, startTimeMS, endTimeMS, sentence)
+		m, err = writeVTT(&buffer, i+1, startTimeMS, endTimeMS, sentence)
+		n += m
+		if err != nil {
+			return
+		}
 	}
 
-	return nil
+	return
 }
