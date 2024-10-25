@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 
 	g "github.com/birabittoh/gopipe/src/globals"
 	"github.com/kkdai/youtube/v2"
@@ -110,12 +111,19 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		videoURL = fmt.Sprintf("/proxy/%s/%d", videoID, formatID)
 	}
 
+	splitResult := strings.Split(format.MimeType, ";")
+	var mimeType string
+	if len(splitResult) != 0 {
+		mimeType = splitResult[0]
+	}
+
 	data := map[string]interface{}{
 		"VideoID":           videoID,
 		"VideoURL":          videoURL,
 		"Author":            video.Author,
 		"Title":             video.Title,
 		"Description":       video.Description,
+		"MimeType":          mimeType,
 		"Thumbnail":         thumbnail,
 		"Duration":          video.Duration,
 		"Captions":          getCaptions(*video),
