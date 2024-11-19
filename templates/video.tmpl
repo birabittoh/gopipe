@@ -15,8 +15,8 @@
     <meta property="twitter:image" content="{{ .Thumbnail }}" />
     <meta property="twitter:player:stream:content_type" content="{{ .MimeType }}" />
     {{ if .VideoURL }}
-    <meta property="og:video" content="{{ .VideoURL }}" />
-    <meta property="og:video:secure_url" content="{{ .VideoURL }}" />
+    <meta property="og:video" content="{{ safe .VideoURL }}" />
+    <meta property="og:video:secure_url" content="{{ safe .VideoURL }}" />
     <meta property="og:video:duration" content="{{ .Duration }}">
     <meta property="og:video:type" content="{{ .MimeType }}" />
     {{ end }}
@@ -25,7 +25,7 @@
 
 {{define "content" -}}
     <video style="width: 100%" autoplay controls>
-        <source src="{{ .VideoURL }}" type="{{ .MimeType }}" />
+        <source src="{{ safe .VideoURL }}" type="{{ .MimeType }}" />
         {{ range .Captions }}
         <track kind="subtitles" label="{{ .Language }}" src="/sub/{{ .VideoID }}/{{ .Language }}.vtt" srclang="{{ .Language }}" />
         {{ end }}

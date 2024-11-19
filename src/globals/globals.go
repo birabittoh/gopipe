@@ -29,7 +29,7 @@ var (
 	AdminUser string
 	AdminPass string
 
-	funcMap = template.FuncMap{"parseFormat": parseFormat}
+	funcMap = template.FuncMap{"parseFormat": parseFormat, "safe": safe}
 )
 
 func parseFormat(f youtube.Format) (res string) {
@@ -56,4 +56,8 @@ func parseFormat(f youtube.Format) (res string) {
 
 	res += codecs
 	return
+}
+
+func safe(s string) template.HTML {
+	return template.HTML(s)
 }

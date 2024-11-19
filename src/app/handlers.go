@@ -95,7 +95,7 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 
 	video, format, err := getVideo(videoID, formatID)
 	if err != nil {
-		http.Error(w, err500, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
