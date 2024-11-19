@@ -25,6 +25,10 @@ var (
 
 func parseExpiration(url string) time.Duration {
 	expireString := expireRegex.FindStringSubmatch(url)
+	if len(expireString) < 2 {
+		return defaultCacheDuration
+	}
+
 	expireTimestamp, err := strconv.ParseInt(expireString[1], 10, 64)
 	if err != nil {
 		log.Println("parseExpiration ERROR:", err)
