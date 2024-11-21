@@ -65,9 +65,10 @@ func Main() {
 	r.HandleFunc("GET /proxy/{videoID}/{formatID}", proxyHandler)
 	r.HandleFunc("GET /sub/{videoID}/{language}", subHandler)
 
-	r.HandleFunc("POST /download", downloadHandler)
-
 	r.HandleFunc("GET /cache", cacheHandler)
+	r.HandleFunc("GET /refresh/{videoID}", refreshHandler)
+
+	r.HandleFunc("POST /download", downloadHandler)
 
 	log.Println("Serving on port " + g.Port)
 	log.Fatal(http.ListenAndServe(":"+g.Port, serveMux))

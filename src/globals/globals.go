@@ -20,7 +20,7 @@ var (
 	Port  string
 
 	C  = http.DefaultClient
-	YT = youtube.Client{}
+	YT = youtube.Client{HTTPClient: C}
 	XT = extemplate.New().Funcs(funcMap)
 
 	KS  = myks.New[youtube.Video](3 * time.Hour)

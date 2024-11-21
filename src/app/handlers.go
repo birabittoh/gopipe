@@ -15,9 +15,10 @@ import (
 
 const (
 	fmtYouTubeURL = "https://www.youtube.com/watch?v=%s"
+	err400        = "Bad Request"
+	err401        = "Unauthorized"
 	err404        = "Not Found"
 	err500        = "Internal Server Error"
-	err401        = "Unauthorized"
 	heading       = `<!--
  .d8888b.           8888888b.  d8b                  
 d88P  Y88b          888   Y88b Y8P                  
@@ -202,4 +203,24 @@ func cacheHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err500, http.StatusInternalServerError)
 		return
 	}
+}
+
+func refreshHandler(w http.ResponseWriter, r *http.Request) {
+	videoID := r.PathValue("videoID")
+	if videoID == "" {
+		http.Error(w, err400, http.StatusBadRequest)
+		return
+	}
+
+	if !videoRegex.MatchString(videoID) {
+		http.Error(w, err400, http.StatusBadRequest)
+		return
+	}
+
+	video, err := g.KS.Get(videoID)
+	if err == nil && video != nil {
+		g.KS.Delete(videoID)
+	}
+
+	http.Redirect(w, r, "/"+videoID, http.StatusFound)
 }
