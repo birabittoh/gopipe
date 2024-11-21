@@ -110,20 +110,54 @@ func getFromCache(videoID string, formatID int) (video *youtube.Video, format *y
 func getFromYT(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
 	url := getURL(videoID)
 
-	log.Println("Requesting video", url)
-	video, err = g.YT.GetVideo(url)
-	if err != nil || video == nil {
-		return
-	}
-
-	format = getFormat(*video, formatID)
+	const maxRetries = 3
+	const maxBytesToCheck = 1024
 	duration := defaultCacheDuration
-	if format != nil {
-		duration = parseExpiration(format.URL)
+
+	for i := 0; i < maxRetries; i++ {
+		log.Println("Requesting video", url, "attempt", i+1)
+		video, err = g.YT.GetVideo(url)
+		if err != nil || video == nil {
+			log.Println("Error fetching video info:", err)
+			continue
+		}
+
+		format = getFormat(*video, formatID)
+		if format != nil {
+			duration = parseExpiration(format.URL)
+		}
+
+		resp, err := g.C.Get(format.URL)
+		if err != nil {
+			log.Println("Error fetching video URL:", err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.ContentLength <= 0 {
+			log.Println("Invalid video link, no content length...")
+			continue
+		}
+
+		buffer := make([]byte, maxBytesToCheck)
+		n, err := resp.Body.Read(buffer)
+		if err != nil {
+			log.Println("Error reading video content:", err)
+			continue
+		}
+
+		if n > 0 {
+			log.Println("Valid video link found.")
+			g.KS.Set(videoID, *video, duration)
+			return video, format, nil
+		}
+
+		log.Println("Invalid video link, content is empty...")
+		time.Sleep(1 * time.Second)
 	}
 
-	g.KS.Set(videoID, *video, duration)
-	return
+	err = fmt.Errorf("failed to fetch valid video after %d attempts", maxRetries)
+	return nil, nil, err
 }
 
 func getVideo(videoID string, formatID int) (video *youtube.Video, format *youtube.Format, err error) {
